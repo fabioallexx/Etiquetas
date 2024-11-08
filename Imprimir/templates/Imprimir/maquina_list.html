@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Máquinas</title>
+</head>
+<body>
+    <h1>Lista de Máquinas</h1>
+    <ul>
+        {% for maquina in maquinas %}
+            <li>
+                {{ maquina.nome }}
+                <a href="{% url 'visualizar_etiqueta'%}">Visualizar Etiqueta</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
