@@ -80,8 +80,8 @@ DATABASES = {
         'NAME': 'TI',
         'USER': 'utilleitura',
         'PASSWORD': 'Tretas@1357..',
-        'HOST': 'CMM-TRACKIT\\TRACKIT',
-        'PORT': '',
+        'HOST': '172.40.0.113',
+        'PORT': '1433',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
             'extra_params': 'TrustServerCertificate=yes;',
@@ -89,6 +89,7 @@ DATABASES = {
     }
 }
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

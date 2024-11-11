@@ -1,18 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <title>Lista de Máquinas</title>
 </head>
 <body>
     <h1>Lista de Máquinas</h1>
-    <ul>
-        {% for maquina in maquinas %}
-            <li>
-                {{ maquina.nome }}
-                <a href="{% url 'visualizar_etiqueta'%}">Visualizar Etiqueta</a>
-            </li>
-        {% endfor %}
-    </ul>
+
+    <form method="get" action="{% url 'lista_maquinas' %}">
+        <input type="text" name="search" placeholder="Pesquisar por nome" value="{{ search_query }}">
+        <button type="submit">Pesquisar</button>
+    </form>
+
+    <div>
+        <a href="{% url 'imprimir_etiqueta_customizada' %}">
+            <button type="button">Imprimir Etiqueta Customizada</button>
+        </a>
+    </div>
+
+    <a href="{% url 'lista_maquinas' %}">
+        <button type="button">Limpar Pesquisa</button>
+    </a>
+
+    <form method="POST">
+        {% csrf_token %}
+        <ul>
+            {% for maquina in maquinas %}
+                <li>
+                    <input type="checkbox" name="maquinas" value="{{ maquina.nome }}"
+                    {% if maquina.nome in maquinas_selecionadas %}checked{% endif %}>
+                    {{ maquina.nome }}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <button type="submit">Selecionar Máquinas</button>
+    </form>
+    <br>
+    <a href="{% url 'visualizar_maquinas_selecionadas' %}">
+        <button type="button">Visualizar Selecionadas</button>
+    </a>
 </body>
 </html>

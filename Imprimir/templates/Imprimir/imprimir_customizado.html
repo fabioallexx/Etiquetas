@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Impressão Customizada</title>
+</head>
+<body>
+    <h1>Impressão de Etiqueta Customizada</h1>
+
+    <form method="post" action="{% url 'imprimir_etiqueta_customizada' %}">
+        {% csrf_token %}
+        <label for="nome">Nome da Máquina:</label>
+        <input type="text" name="nome" id="nome" required>
+        <button type="submit">Imprimir Etiqueta</button>
+    </form>
+
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+    {% if success_message %}
+        <p style="color: green;">{{ success_message }}</p>
+    {% endif %}
+
+    <a href="{% url 'lista_maquinas' %}"><button>Voltar</button></a>
+</body>
+</html>

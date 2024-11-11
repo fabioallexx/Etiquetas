@@ -34,7 +34,6 @@
 
 <h1>Pré-Visualização da Etiqueta</h1>
 
-<!-- Container para a pré-visualização -->
 <div class="label-container">
     <div class="label-header">
         {{ maquina.nome }}
@@ -43,14 +42,12 @@
         <p>Codigo: {{ maquina.nome }}</p>
     </div>
     <div class="barcode">
-        <!-- Gerar código de barras -->
         <svg id="barcode"></svg>
     </div>
 </div>
 
-<!-- Botões para Confirmar ou Cancelar -->
 <div class="buttons">
-    <form action="{% url 'imprimir_etiqueta'%}" method="post">
+    <form action="{% url 'imprimir_etiqueta' nome=maquina.nome %}" method="post">
         {% csrf_token %}
         <button type="submit" name="action" value="confirmar">Confirmar Impressão</button>
     </form>
@@ -60,10 +57,14 @@
     <a href="{% url 'lista_maquinas' %}">
         <button type="button">Cancelar</button>
     </a>
+
+    <br><br>
+    <a href="{% url 'imprimir_etiqueta_customizada' %}">
+        <button type="button">Imprimir Etiqueta Customizada</button>
+    </a>
 </div>
 
 <script>
-    // Gerar código de barras
     JsBarcode("#barcode", "{{ maquina.nome }}", {
         format: "CODE128",   // Define o formato do código de barras
         width: 2,            // Largura dos elementos do código

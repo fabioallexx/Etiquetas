@@ -1,10 +1,11 @@
 import win32print
 import win32api
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from .models import Maquina
 import os
 from django.conf import settings
+from django.contrib import messages
 
 def imprimir_etiqueta(request, nome):
     maquina = get_object_or_404(Maquina, nome=nome)
@@ -33,8 +34,29 @@ def enviar_para_impressora(zpl):
         raise Exception(f"Erro ao enviar ZPL para a impressora: {e}")
 
 def lista_maquinas(request):
-    maquinas = Maquina.objects.all()
-    return render(request, 'Imprimir/leitor_list.html', {'maquinas': maquinas})
+    search_query = request.GET.get('search', '')
+    maquinas_selecionadas = request.session.get('maquinas_selecionadas', [])
+    
+    if search_query:
+        maquinas = Maquina.objects.filter(nome__icontains=search_query).order_by('nome')
+    else:
+        maquinas = Maquina.objects.filter(nome__icontains='A').order_by('nome')
+
+    if request.method == 'POST':
+        maquinas_selecionadas_post = request.POST.getlist('maquinas')
+
+        if maquinas_selecionadas_post:
+            request.session['maquinas_selecionadas'] = maquinas_selecionadas_post
+
+            return redirect('visualizar_maquinas_selecionadas')
+        else:
+            messages.error(request, "Nenhuma máquina foi selecionada.")
+
+    return render(request, 'Imprimir/maquina_list.html', {
+        'maquinas': maquinas,
+        'maquinas_selecionadas': maquinas_selecionadas,
+        'search_query': search_query
+    })
 
 def gerar_zpl(nome):
     zpl_path = os.path.join(settings.BASE_DIR, "zpl_templates", "biblioteca.zpl")
@@ -58,3 +80,50 @@ def visualizar_etiqueta(request, nome):
             return HttpResponse(f"Erro ao enviar a etiqueta para impressão: {e}", status=500)
     
     return render(request, 'Imprimir/visualizar_etiqueta.html', {'maquina': maquina})
+
+def imprimir_etiqueta_customizada(request):
+    if request.method == 'POST':
+        nome = request.POST.get('nome', '').strip()
+        
+        if nome:
+            zpl_content = gerar_zpl(nome)
+            try:
+                enviar_para_impressora(zpl_content)
+                success_message = f"Etiqueta para '{nome}' enviada para impressão com sucesso."
+                return render(request, 'Imprimir/imprimir_customizado.html', {'success_message': success_message})
+            except Exception as e:
+                error_message = f"Erro ao enviar a etiqueta para '{nome}' para impressão: {e}"
+                return render(request, 'Imprimir/imprimir_customizado.html', {'error_message': error_message})
+        else:
+            error_message = "Nome não pode ser vazio."
+            return render(request, 'Imprimir/imprimir_customizado.html', {'error_message': error_message})
+    
+    return render(request, 'Imprimir/imprimir_customizado.html')
+
+def visualizar_maquinas_selecionadas(request):
+    maquinas_selecionadas = request.session.get('maquinas_selecionadas', [])
+
+    maquinas = Maquina.objects.filter(nome__in=maquinas_selecionadas)
+
+    if request.method == 'POST':
+        if 'imprimir' in request.POST:
+            zpl_content = "\n".join([gerar_zpl(maquina) for maquina in maquinas_selecionadas])
+            try:
+                enviar_para_impressora(zpl_content)
+                messages.success(request, "Etiquetas enviadas para impressão com sucesso.")
+                return redirect('lista_maquinas')
+            except Exception as e:
+                messages.error(request, f"Erro ao enviar as etiquetas para impressão: {e}")
+                return redirect('visualizar_maquinas_selecionadas')
+        elif 'cancelar' in request.POST:
+            request.session['maquinas_selecionadas'] = []
+            return redirect('lista_maquinas')
+
+    return render(request, 'Imprimir/visualizar_selecionadas.html', {'maquinas': maquinas})
+
+def remover_maquina(request, nome):
+    maquinas_selecionadas = request.session.get('maquinas_selecionadas', [])
+    if nome in maquinas_selecionadas:
+        maquinas_selecionadas.remove(nome)
+        request.session['maquinas_selecionadas'] = maquinas_selecionadas
+    return redirect('visualizar_maquinas_selecionadas')

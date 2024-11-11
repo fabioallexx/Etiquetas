@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualizar Máquinas Selecionadas</title>
+</head>
+<body>
+
+<h1>Máquinas Selecionadas</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <ul>
+        {% for maquina in maquinas %}
+            <li>
+                {{ maquina.nome }}
+                <a href="{% url 'remover_maquina' nome=maquina.nome %}">Remover</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <button type="submit" name="imprimir">Imprimir Etiquetas</button>
+    <button type="submit" name="cancelar">Cancelar Seleção</button>
+</form>
+
+<a href="{% url 'lista_maquinas' %}">
+    <button>Voltar</button>
+</a>
+
+</body>
+</html>
